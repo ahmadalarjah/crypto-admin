@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { apiClient } from "@/lib/api"
 import type { ColumnDef } from "@tanstack/react-table"
-import { Check, X, MoreHorizontal } from "lucide-react"
+import { Check, X, MoreHorizontal, RefreshCw } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +43,15 @@ export default function DepositsPage() {
   useEffect(() => {
     loadDeposits()
   }, [statusFilter])
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadDeposits()
+    }, 30000)
+    
+    return () => clearInterval(interval)
+  }, [])
 
   const loadDeposits = async () => {
     try {
@@ -146,8 +155,12 @@ export default function DepositsPage() {
       accessorKey: "bonusAmount",
       header: "Bonus",
       cell: ({ row }) => {
-        const bonus = Number.parseFloat(row.getValue("bonusAmount"))
-        return bonus > 0 ? <div className="font-medium">${bonus.toLocaleString()}</div> : <div>-</div>
+        const bonusValue = row.getValue("bonusAmount")
+        if (bonusValue === null || bonusValue === undefined || bonusValue === "") {
+          return <div>-</div>
+        }
+        const bonus = Number.parseFloat(bonusValue)
+        return !isNaN(bonus) && bonus > 0 ? <div className="font-medium">${bonus.toLocaleString()}</div> : <div>-</div>
       },
     },
     {
@@ -241,6 +254,16 @@ export default function DepositsPage() {
             <SelectItem value="REJECTED">Rejected</SelectItem>
           </SelectContent>
         </Select>
+        
+        <Button 
+          onClick={loadDeposits} 
+          variant="outline" 
+          size="sm"
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Refresh
+        </Button>
       </div>
 
       <DataTable columns={columns} data={deposits} searchKey="userName" searchPlaceholder="Search deposits..." />
