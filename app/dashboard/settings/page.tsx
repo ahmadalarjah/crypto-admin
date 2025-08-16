@@ -106,6 +106,27 @@ export default function SettingsPage() {
     }
   }
 
+  const handleUpdatePlatformWallet = async () => {
+    if (!settings) return
+
+    try {
+      setSaving(true)
+      await apiClient.updatePlatformWallet(settings.usdtWalletAddress)
+      toast({
+        title: "Success",
+        description: "Platform wallet address updated successfully",
+      })
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "Failed to update platform wallet address",
+        variant: "destructive",
+      })
+    } finally {
+      setSaving(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
@@ -197,19 +218,24 @@ export default function SettingsPage() {
             <CardTitle className="text-lg sm:text-xl">Platform Wallet</CardTitle>
             <CardDescription>USDT wallet address for receiving deposits</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="walletAddress">USDT Wallet Address</Label>
               <Input 
                 id="walletAddress" 
                 value={settings?.usdtWalletAddress || ""} 
-                readOnly 
+                onChange={(e) => setSettings((prev) => (prev ? { ...prev, usdtWalletAddress: e.target.value } : null))}
+                placeholder="Enter USDT wallet address..."
                 className="font-mono text-xs sm:text-sm" 
               />
               <p className="text-xs sm:text-sm text-muted-foreground">
-                This is the platform's USDT wallet address. Contact system administrator to change.
+                This is the platform's USDT wallet address that users will see on the deposit page.
               </p>
             </div>
+            <Button onClick={handleUpdatePlatformWallet} disabled={saving} className="w-full sm:w-auto">
+              <Save className="mr-2 h-4 w-4" />
+              {saving ? "Saving..." : "Save Wallet Address"}
+            </Button>
           </CardContent>
         </Card>
 
