@@ -240,6 +240,13 @@ class ApiClient {
     })
   }
 
+  async updatePlatformWallet(walletAddress: string) {
+    return this.request("/api/admin/settings/platform-wallet", {
+      method: "POST",
+      body: JSON.stringify({ walletAddress }),
+    })
+  }
+
   // Daily counter management
   async activateUserCounter(userId: number) {
     return this.request(`/api/admin/users/${userId}/counter/activate`, { method: "POST" })
